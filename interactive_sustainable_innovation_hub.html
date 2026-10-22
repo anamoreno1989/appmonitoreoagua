@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agua Segura en Casa - Plataforma de Monitoreo IoT, Litigio Legal y Sostenibilidad Hídrica ZMG</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js for Water Quality & Financial Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        emerald: {
+                            50: '#ecfdf5',
+                            100: '#d1fae5',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                            900: '#064e3b',
+                        },
+                        cyan: {
+                            500: '#06b6d4',
+                            600: '#0891b2',
+                            800: '#155e75',
+                            900: '#164e63',
+                        },
+                        amber: {
+                            500: '#f59e0b',
+                            600: '#d97706',
+                        },
+                        darkBg: '#0b132b',
+                        cardBg: '#1c2541'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #1c2541;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #0891b2;
+            border-radius: 4px;
+        }
+        .glass-panel {
+            background: rgba(28, 37, 65, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .active-tab {
+            border-bottom: 3px solid #06b6d4;
+            color: #06b6d4;
+            background: rgba(6, 182, 212, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col">
+
+    <header class="glass-panel sticky top-0 z-50 px-4 py-3 border-b border-slate-800">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="p-2.5 bg-gradient-to-tr from-cyan-600 to-emerald-500 rounded-xl shadow-lg shadow-cyan-900/40">
+                    <i class="fa-solid font-bold text-xl fa-droplet text-white"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold bg-gradient-to-r from-cyan-400 to-emerald-300 bg-clip-text text-transparent">
+                        Agua Segura en Casa
+                    </h1>
+                    <p class="text-xs text-slate-400">Monitoreo IoT, Vigilancia NOM-127 & Asesoría Legal ZMG</p>
+                </div>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <nav class="flex space-x-1 sm:space-x-2 overflow-x-auto custom-scrollbar pb-1 sm:pb-0 text-sm font-medium">
+                <button onclick="switchTab('overview')" id="tab-overview" class="tab-btn px-3 py-2 rounded-lg transition-all duration-200 hover:bg-slate-800 text-slate-300 active-tab flex items-center gap-2">
+                    <i class="fa-solid fa-compass"></i> <span>Resumen</span>
+                </button>
+                <button onclick="switchTab('crisis')" id="tab-crisis" class="tab-btn px-3 py-2 rounded-lg transition-all duration-200 hover:bg-slate-800 text-slate-400 flex items-center gap-2">
+                    <i class="fa-solid fa-triangle-exclamation"></i> <span>Crisis ZMG & Datos</span>
+                </button>
+                <button onclick="switchTab('legal')" id="tab-legal" class="tab-btn px-3 py-2 rounded-lg transition-all duration-200 hover:bg-slate-800 text-slate-400 flex items-center gap-2">
+                    <i class="fa-solid fa-scale-balanced"></i> <span>Marco Legal & Amparos</span>
+                </button>
+                <button onclick="switchTab('report')" id="tab-report" class="tab-btn px-3 py-2 rounded-lg transition-all duration-200 hover:bg-slate-800 text-slate-400 flex items-center gap-2">
+                    <i class="fa-solid fa-bullhorn"></i> <span>Reporte & Sensores IoT</span>
+                </button>
+                <button onclick="switchTab('sdg')" id="tab-sdg" class="tab-btn px-3 py-2 rounded-lg transition-all duration-200 hover:bg-slate-800 text-slate-400 flex items-center gap-2">
+                    <i class="fa-solid fa-globe"></i> <span>ODS Agenda 2030</span>
+                </button>
+                <button onclick="switchTab('team')" id="tab-team" class="tab-btn px-3 py-2 rounded-lg transition-all duration-200 hover:bg-slate-800 text-slate-400 flex items-center gap-2">
+                    <i class="fa-solid fa-users"></i> <span>Equipo Multidisciplinario</span>
+                </button>
+                <button onclick="switchTab('business')" id="tab-business" class="tab-btn px-3 py-2 rounded-lg transition-all duration-200 hover:bg-slate-800 text-slate-400 flex items-center gap-2">
+                    <i class="fa-solid fa-chart-line"></i> <span>Plan de Negocio & ROI</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 my-2">
+
+        <!-- TAB 1: OVERVIEW -->
+        <section id="content-overview" class="tab-content space-y-6">
+            <!-- Hero banner -->
+            <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-cyan-950/80 via-slate-900 to-emerald-950/80 p-6 sm:p-8 border border-cyan-500/30 shadow-2xl">
+                <div class="max-w-3xl space-y-4 relative z-10">
+                    <span class="px-3 py-1 text-xs font-semibold uppercase tracking-wider bg-cyan-500/20 text-cyan-300 rounded-full border border-cyan-500/30">
+                        Innovación Social + IoT Hardware + Asesoría Jurídica
+                    </span>
+                    <h2 class="text-3xl sm:text-4xl font-extrabold text-white leading-tight">
+                        Filtro Inteligente, Semáforo de Calidad y Defensoría del Derecho Humano al Agua en la ZMG
+                    </h2>
+                    <p class="text-slate-300 text-base sm:text-lg leading-relaxed">
+                        Una solución integral que combina tecnología física (filtro cerámico-carbón de bajo costo con sensores de pH, TDS y Turbidez), alertas visuales comunitarias y un ecosistema de litigio estratégico contra la contaminación hídrica en Jalisco.
+                    </p>
+                    <div class="flex flex-wrap gap-4 pt-2">
+                        <button onclick="switchTab('report')" class="px-5 py-2.5 bg-cyan-500 hover:bg-cyan-600 text-slate-950 font-bold rounded-xl shadow-lg transition duration-200 flex items-center gap-2">
+                            <i class="fa-solid fa-microchip"></i> Probar Sensores & Reporte Ciudadano
+                        </button>
+                        <button onclick="switchTab('legal')" class="px-5 py-2.5 glass-panel hover:bg-slate-800 text-white font-medium rounded-xl transition duration-200 flex items-center gap-2">
+                            <i class="fa-solid fa-gavel"></i> Consultar Formatos de Amparo & NOM-127
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Key Metrics Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="glass-panel p-5 rounded-2xl border-l-4 border-cyan-500">
+                    <div class="flex items-center justify-between">
+                        <span class="text-slate-400 text-sm font-medium">Límite Turbidez NOM-127</span>
+                        <i class="fa-solid fa-filter text-cyan-400 text-xl"></i>
+                    </div>
+                    <div class="text-2xl font-bold mt-2 text-white">4.0 UTN</div>
+                    <p class="text-xs text-slate-400 mt-1">Superado en +180 colonias de ZMG</p>
+                </div>
+                <div class="glass-panel p-5 rounded-2xl border-l-4 border-emerald-500">
+                    <div class="flex items-center justify-between">
+                        <span class="text-slate-400 text-sm font-medium">Costo Filtro Integrado</span>
+                        <i class="fa-solid fa-hand-holding-dollar text-emerald-400 text-xl"></i>
+                    </div>
+                    <div class="text-2xl font-bold mt-2 text-white">$450 - $650 MXN</div>
+                    <p class="text-xs text-slate-400 mt-1">Accesible para hogares de bajo ingreso</p>
+                </div>
+                <div class="glass-panel p-5 rounded-2xl border-l-4 border-amber-500">
+                    <div class="flex items-center justify-between">
+                        <span class="text-slate-400 text-sm font-medium">Colonias Afectadas ZMG</span>
+                        <i class="fa-solid fa-faucet-drip text-amber-400 text-xl"></i>
+                    </div>
+                    <div class="text-2xl font-bold mt-2 text-white">+210 Colonias</div>
+                    <p class="text-xs text-slate-400 mt-1">Reportes de agua turbia/con metales</p>
+                </div>
+                <div class="glass-panel p-5 rounded-2xl border-l-4 border-purple-500">
+                    <div class="flex items-center justify-between">
+                        <span class="text-slate-400 text-sm font-medium">Base Constitucional</span>
+                        <i class="fa-solid fa-book-bookmark text-purple-400 text-xl"></i>
+                    </div>
+                    <div class="text-2xl font-bold mt-2 text-white">Art. 4º Párrafo 6</div>
+                    <p class="text-xs text-slate-400 mt-1">Derecho Humano al Agua Potable</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: CRISIS ZMG -->
+        <section id="content-crisis" class="tab-content hidden space-y-6">
+            <div class="glass-panel p-6 sm:p-8 rounded-2xl">
+                <h3 class="text-2xl font-bold text-cyan-400 mb-4 flex items-center gap-3">
+                    <i class="fa-solid fa-triangle-exclamation"></i> Diagnóstico de la Crisis Hídrica en la ZMG (Jalisco)
+                </h3>
+                <p class="text-slate-300 leading-relaxed mb-6">
+                    Estudios e investigaciones de la Universidad de Guadalajara (UdeG), ITESO e IMDEC confirman que miles de hogares en municipios como San Pedro Tlaquepaque, Tonalá, Zapopan y Guadalajara reciben agua con niveles de turbidez, sedimentos y coliformes que transgreden la norma oficial.
+                </p>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-slate-900/80 p-5 rounded-xl border border-slate-800 space-y-3">
+                        <div class="w-10 h-10 rounded-lg bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-400 font-bold">
+                            UTN
+                        </div>
+                        <h4 class="font-bold text-lg text-white">Turbidez & Sedimentos</h4>
+                        <p class="text-slate-400 text-sm leading-relaxed">
+                            Muestreos en colonias como San Juan de Ocotán, Miravalle y Las Juntas registran niveles de turbidez de entre 8 y 25 UTN, violando el límite máximo permisible de **4.0 UTN** establecido en la NOM-127-SSA1-2021.
+                        </p>
+                    </div>
+
+                    <div class="bg-slate-900/80 p-5 rounded-xl border border-slate-800 space-y-3">
+                        <div class="w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 font-bold">
+                            Cl
+                        </div>
+                        <h4 class="font-bold text-lg text-white">Deficiencia de Cloración</h4>
+                        <p class="text-slate-400 text-sm leading-relaxed">
+                            En los extremos de la red de distribución del SIAPA, el cloro residual libre suele ser inferior al mínimo legal de **0.2 mg/L**, favoreciendo la proliferación de patógenos y dermatitis en la población infantil.
+                        </p>
+                    </div>
+
+                    <div class="bg-slate-900/80 p-5 rounded-xl border border-slate-800 space-y-3">
+                        <div class="w-10 h-10 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-bold">
+                            TDS
+                        </div>
+                        <h4 class="font-bold text-lg text-white">Sólidos Disueltos Totales</h4>
+                        <p class="text-slate-400 text-sm leading-relaxed">
+                            Agua proveniente del bombeo profundo o fuentes contaminadas con concentraciones elevadas de metales pesados y sales disueltas superando los **1000 mg/L** recomendados.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Interactive Data Comparison Chart -->
+                <div class="mt-8 bg-slate-900/90 p-5 rounded-xl border border-slate-800">
+                    <h4 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-chart-column text-cyan-400"></i> Comparativa de Calidad de Agua: Red SIAPA vs. NOM-127-SSA1-2021
+                    </h4>
+                    <div class="h-64 sm:h-72 w-full">
+                        <canvas id="waterQualityChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: LEGAL FRAMEWORK -->
+        <section id="content-legal" class="tab-content hidden space-y-6">
+            <div class="glass-panel p-6 sm:p-8 rounded-2xl">
+                <div class="mb-6">
+                    <h3 class="text-2xl font-bold text-cyan-400 flex items-center gap-3">
+                        <i class="fa-solid fa-scale-balanced"></i> Marco Legal, NOM-127 y Litigio Colectivo
+                    </h3>
+                    <p class="text-slate-300 text-sm mt-1">
+                        Fundamentación jurídica para exigir la garantía del derecho al agua potable de calidad y la rendición de cuentas del SIAPA y organismos estatales.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Art 4 Constitucional -->
+                    <div class="p-5 bg-slate-900/90 rounded-xl border-l-4 border-cyan-500 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <h4 class="font-bold text-lg text-white">Constitución Política (Art. 4º Párrafo 6)</h4>
+                            <span class="text-xs bg-cyan-500/20 text-cyan-300 px-2.5 py-1 rounded-full font-bold">Derecho Fundamental</span>
+                        </div>
+                        <p class="text-slate-300 text-sm leading-relaxed">
+                            "Toda persona tiene derecho al acceso, disposición y saneamiento de agua para consumo personal y doméstico en forma suficiente, salubre, aceptable y asequible."
+                        </p>
+                    </div>
+
+                    <!-- NOM-127-SSA1-2021 -->
+                    <div class="p-5 bg-slate-900/90 rounded-xl border-l-4 border-emerald-500 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <h4 class="font-bold text-lg text-white">NOM-127-SSA1-2021</h4>
+                            <span class="text-xs bg-emerald-500/20 text-emerald-300 px-2.5 py-1 rounded-full font-bold">Norma Sanitaria</span>
+                        </div>
+                        <p class="text-slate-300 text-sm leading-relaxed">
+                            Establece los límites permisibles de calidad que debe cumplir el agua para uso y consumo humano. Define parámetros obligatorios de Turbidez (≤4 UTN), Cloro libre (0.2 a 1.5 mg/L) y ausencias de coliformes.
+                        </p>
+                    </div>
+
+                    <!-- Ley de Aguas y SIAPA -->
+                    <div class="p-5 bg-slate-900/90 rounded-xl border-l-4 border-amber-500 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <h4 class="font-bold text-lg text-white">Ley del Agua para el Estado de Jalisco</h4>
+                            <span class="text-xs bg-amber-500/20 text-amber-300 px-2.5 py-1 rounded-full font-bold">Estatal / Municipal</span>
+                        </div>
+                        <p class="text-slate-300 text-sm leading-relaxed">
+                            Regula las obligaciones del SIAPA y municipios para prestar servicios potables con estándares de salubridad y la cobrabilidad justa de tarifas acordes con la calidad real entregada.
+                        </p>
+                    </div>
+
+                    <!-- Organismos Reguladores -->
+                    <div class="p-5 bg-slate-900/90 rounded-xl border-l-4 border-purple-500 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <h4 class="font-bold text-lg text-white">Organismos Reguladores & Instancias</h4>
+                            <span class="text-xs bg-purple-500/20 text-purple-300 px-2.5 py-1 rounded-full font-bold">COPRISJAL & CEDHJ</span>
+                        </div>
+                        <p class="text-slate-300 text-sm leading-relaxed">
+                            COPRISJAL vigila la inocuidad sanitaria, mientras que la CEDHJ emite recomendaciones obligatorias ante la transgresión de los derechos humanos ambientales.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Amparo Generator Section -->
+                <div class="mt-8 p-6 bg-slate-900 rounded-2xl border border-cyan-500/30 space-y-4">
+                    <h4 class="text-xl font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-file-contract text-cyan-400"></i> Generador de Solicitud Formal / Amparo Colectivo SIAPA
+                    </h4>
+                    <p class="text-slate-300 text-sm">
+                        Ingresa tus datos para generar un formato pre-llenado de queja administrativa ante COPRISJAL y suspensión vía Amparo Indirecto ante la ineficiencia de calidad de agua.
+                    </p>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <input type="text" id="legal-name" placeholder="Nombre completo del ciudadano" class="p-3 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-cyan-500">
+                        <input type="text" id="legal-colonia" placeholder="Colonia y Municipio (ej. Miravalle, Tlaquepaque)" class="p-3 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-cyan-500">
+                        <input type="text" id="legal-account" placeholder="Número de cuenta SIAPA (Opcional)" class="p-3 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-cyan-500">
+                        <select id="legal-issue" class="p-3 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-cyan-500">
+                            <option value="Agua extremadamente turbia/marrón">Agua extremadamente turbia/marrón</option>
+                            <option value="Mal olor y irritación cutánea">Mal olor e irritación cutánea</option>
+                            <option value="Desabasto intermitente y cobro indebido">Desabasto intermitente y cobro indebido</option>
+                        </select>
+                    </div>
+
+                    <button onclick="generateLegalDocument()" class="px-6 py-3 bg-cyan-500 hover:bg-cyan-600 text-slate-950 font-bold rounded-xl transition duration-200 flex items-center gap-2">
+                        <i class="fa-solid fa-download"></i> Generar Documento de Queja Formal
+                    </button>
+
+                    <div id="legal-preview" class="hidden mt-4 p-4 bg-slate-950 rounded-xl border border-slate-800 text-xs font-mono text-slate-300 leading-relaxed overflow-x-auto">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: CITIZEN REPORT & IOT SENSORS -->
+        <section id="content-report" class="tab-content hidden space-y-6">
+            <div class="glass-panel p-6 sm:p-8 rounded-2xl">
+                <div class="mb-6">
+                    <h3 class="text-2xl font-bold text-cyan-400 flex items-center gap-3">
+                        <i class="fa-solid fa-microchip"></i> Simulación de Sensores IoT & Portal de Reportes
+                    </h3>
+                    <p class="text-slate-300 text-sm mt-1">
+                        Interactúa con los parámetros en tiempo real del filtro físico (pH, Turbidez UTN, TDS) y genera alertas comunitarias.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Sensor Controls & Live Status -->
+                    <div class="bg-slate-900/90 p-5 rounded-xl border border-slate-800 space-y-5">
+                        <h4 class="font-bold text-white text-base border-b border-slate-800 pb-2">Simulador de Entrada de Sensores IoT</h4>
+
+                        <div>
+                            <div class="flex justify-between text-xs text-slate-300 mb-1">
+                                <span>Turbidez Entrada (UTN)</span>
+                                <span id="val-turbidity" class="font-bold text-red-400">12.5 UTN</span>
+                            </div>
+                            <input type="range" id="input-turbidity" min="0.5" max="30" value="12.5" step="0.5"
+                                class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-red-500"
+                                oninput="updateSensorReadings()">
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between text-xs text-slate-300 mb-1">
+                                <span>Nivel de pH</span>
+                                <span id="val-ph" class="font-bold text-cyan-400">6.8</span>
+                            </div>
+                            <input type="range" id="input-ph" min="4.0" max="10.0" value="6.8" step="0.1"
+                                class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-cyan-500"
+                                oninput="updateSensorReadings()">
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between text-xs text-slate-300 mb-1">
+                                <span>Sólidos Disueltos Totales (TDS mg/L)</span>
+                                <span id="val-tds" class="font-bold text-amber-400">650 mg/L</span>
+                            </div>
+                            <input type="range" id="input-tds" min="50" max="1500" value="650" step="25"
+                                class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-amber-500"
+                                oninput="updateSensorReadings()">
+                        </div>
+
+                        <!-- Semáforo Indicator -->
+                        <div class="p-4 rounded-xl border transition-all duration-300 text-center" id="semaforo-box">
+                            <div class="text-xs uppercase font-bold text-slate-300">Estatus del Semáforo Educativo</div>
+                            <div id="semaforo-text" class="text-xl font-extrabold mt-1">ALERTA NO POTABLE</div>
+                            <p id="semaforo-desc" class="text-xs mt-1 text-slate-300">Turbidez alta por encima de NOM-127 (4 UTN). Requiere filtración antes de consumo.</p>
+                        </div>
+                    </div>
+
+                    <!-- Filter Performance & Citizen Form -->
+                    <div class="lg:col-span-2 space-y-6">
+                        <!-- Sensor Output Comparison Panel -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800">
+                                <span class="text-xs text-slate-400 uppercase font-semibold">Agua de Entrada (Grifo SIAPA)</span>
+                                <div class="text-2xl font-extrabold text-red-400 mt-2" id="out-raw">12.5 UTN / Bad</div>
+                                <p class="text-xs text-slate-400 mt-1">Directo de red pública sin tratamiento doméstico.</p>
+                            </div>
+                            <div class="bg-slate-900/80 p-4 rounded-xl border border-emerald-500/30">
+                                <span class="text-xs text-slate-400 uppercase font-semibold">Agua Filtrada (Filtro Cerámico + Carbón)</span>
+                                <div class="text-2xl font-extrabold text-emerald-400 mt-2" id="out-filtered">0.8 UTN / Apta</div>
+                                <p class="text-xs text-slate-400 mt-1">Eficiencia de remoción de turbidez > 93%.</p>
+                            </div>
+                        </div>
+
+                        <!-- Citizen Report Submission Form -->
+                        <div class="bg-slate-900/90 p-5 rounded-xl border border-slate-800 space-y-4">
+                            <h4 class="font-bold text-white text-base">Enviar Reporte Fotográfico & Georeferenciado</h4>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <input type="text" id="report-colonia" placeholder="Colonia (ej. El Colli, Zapopan)" class="p-3 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-cyan-500">
+                                <select id="report-color" class="p-3 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-cyan-500">
+                                    <option value="Amarillo / Marrón">Color del Agua: Amarillo / Marrón</option>
+                                    <option value="Negro con sedimento">Color del Agua: Negro con sedimento</option>
+                                    <option value="Transparente con olor a azufre">Olor fétido o a químico</option>
+                                </select>
+                            </div>
+                            <button onclick="submitCitizenReport()" class="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold rounded-xl transition duration-200 flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-paper-plane"></i> Publicar Reporte en el Mapa Comunitario ZMG
+                            </button>
+
+                            <div id="report-alert" class="hidden p-3 bg-emerald-950/80 border border-emerald-500 text-emerald-300 text-xs rounded-xl">
+                                ¡Reporte registrado correctamente! Se ha añadido al mapa de monitoreo de calidad hídrica.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 5: SDG ALIGNMENT -->
+        <section id="content-sdg" class="tab-content hidden space-y-6">
+            <div class="glass-panel p-6 sm:p-8 rounded-2xl">
+                <div class="mb-6">
+                    <h3 class="text-2xl font-bold text-cyan-400 flex items-center gap-3">
+                        <i class="fa-solid fa-globe"></i> Alineación Estratégica con la Agenda 2030 (ODS)
+                    </h3>
+                    <p class="text-slate-300 text-sm mt-1">
+                        Agua Segura en Casa genera impacto sistémico alineado a los Objetivos de Desarrollo Sostenible de la ONU.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- ODS 6 -->
+                    <div class="p-5 bg-slate-900/90 rounded-xl border-l-4 border-cyan-500 flex gap-4 items-start">
+                        <div class="p-3 bg-cyan-600 text-white font-black text-2xl rounded-lg min-w-[55px] text-center">
+                            6
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-lg text-white">Agua Limpia y Saneamiento</h4>
+                            <p class="text-slate-400 text-sm mt-1">
+                                Garantizar la disponibilidad y la gestión sostenible del agua y el saneamiento para todos, democratizando el monitoreo y la purificación doméstica de bajo costo.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- ODS 3 -->
+                    <div class="p-5 bg-slate-900/90 rounded-xl border-l-4 border-emerald-500 flex gap-4 items-start">
+                        <div class="p-3 bg-emerald-600 text-white font-black text-2xl rounded-lg min-w-[55px] text-center">
+                            3
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-lg text-white">Salud y Bienestar</h4>
+                            <p class="text-slate-400 text-sm mt-1">
+                                Reducción sustancial de enfermedades gastrointestinales, infecciones dermatológicas y riesgos asociados al consumo involuntario de patógenos y metales.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- ODS 12 -->
+                    <div class="p-5 bg-slate-900/90 rounded-xl border-l-4 border-amber-500 flex gap-4 items-start">
+                        <div class="p-3 bg-amber-500 text-white font-black text-2xl rounded-lg min-w-[55px] text-center">
+                            12
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-lg text-white">Producción y Consumo Responsables</h4>
+                            <p class="text-slate-400 text-sm mt-1">
+                                Disminución masiva del uso de plásticos de un solo uso (garrafones y botellas de PET) mediante la potabilización segura in situ en los hogares.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- ODS 16 -->
+                    <div class="p-5 bg-slate-900/90 rounded-xl border-l-4 border-purple-500 flex gap-4 items-start">
+                        <div class="p-3 bg-purple-600 text-white font-black text-2xl rounded-lg min-w-[55px] text-center">
+                            16
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-lg text-white">Paz, Justicia e Instituciones Sólidas</h4>
+                            <p class="text-slate-400 text-sm mt-1">
+                                Fomento del acceso público a la información hídrica, transparencia en la gestión pública del agua y empoderamiento legal de las comunidades afectadas.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 6: MULTIDISCIPLINARY TEAM -->
+        <section id="content-team" class="tab-content hidden space-y-6">
+            <div class="glass-panel p-6 sm:p-8 rounded-2xl">
+                <h3 class="text-2xl font-bold text-cyan-400 mb-2 flex items-center gap-3">
+                    <i class="fa-solid fa-users"></i> Equipo Multidisciplinario del Proyecto
+                </h3>
+                <p class="text-slate-300 text-sm mb-6">
+                    Sinergia técnica, jurídica y de ciencias sociales del Centro Universitario de Guadalajara (CUGDL) y redes de innovación de Jalisco.
+                </p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Member 1 -->
+                    <div class="bg-slate-900/80 p-5 rounded-2xl border border-slate-800 text-center flex flex-col items-center">
+                        <div class="w-20 h-20 bg-gradient-to-tr from-cyan-500 to-blue-600 rounded-full flex items-center justify-center text-slate-950 font-bold text-xl mb-4 shadow-lg">
+                            JG
+                        </div>
+                        <h4 class="font-bold text-lg text-white">Jesús Guzmán</h4>
+                        <span class="text-xs px-2.5 py-1 bg-cyan-500/20 text-cyan-300 rounded-full font-medium my-2">Ingeniería IoT & Hardware</span>
+                        <p class="text-slate-400 text-xs leading-relaxed mt-1">
+                            Diseño de prototipado de bajo costo, integración de sensores microbiológicos y módulos de transmisión de datos.
+                        </p>
+                    </div>
+
+                    <!-- Member 2 -->
+                    <div class="bg-slate-900/80 p-5 rounded-2xl border border-slate-800 text-center flex flex-col items-center">
+                        <div class="w-20 h-20 bg-gradient-to-tr from-emerald-500 to-teal-600 rounded-full flex items-center justify-center text-slate-950 font-bold text-xl mb-4 shadow-lg">
+                            JG
+                        </div>
+                        <h4 class="font-bold text-lg text-white">Jacqueline García</h4>
+                        <span class="text-xs px-2.5 py-1 bg-emerald-500/20 text-emerald-300 rounded-full font-medium my-2">Diseño de Impacto Social</span>
+                        <p class="text-slate-400 text-xs leading-relaxed mt-1">
+                            Especialista en vinculación comunitaria, metodologías participativas y educación para la sostenibilidad hídrica.
+                        </p>
+                    </div>
+
+                    <!-- Member 3 -->
+                    <div class="bg-slate-900/80 p-5 rounded-2xl border border-slate-800 text-center flex flex-col items-center">
+                        <div class="w-20 h-20 bg-gradient-to-tr from-amber-500 to-orange-600 rounded-full flex items-center justify-center text-slate-950 font-bold text-xl mb-4 shadow-lg">
+                            EL
+                        </div>
+                        <h4 class="font-bold text-lg text-white">Ericka Goretti León Pérez</h4>
+                        <span class="text-xs px-2.5 py-1 bg-amber-500/20 text-amber-300 rounded-full font-medium my-2">Análisis de Datos & Salud Pública</span>
+                        <p class="text-slate-400 text-xs leading-relaxed mt-1">
+                            Investigación epidemiológica de contaminantes en agua, gestión de datos comunitarios e indicadores sanitized.
+                        </p>
+                    </div>
+
+                    <!-- Member 4 -->
+                    <div class="bg-slate-900/80 p-5 rounded-2xl border border-slate-800 text-center flex flex-col items-center">
+                        <div class="w-20 h-20 bg-gradient-to-tr from-purple-500 to-pink-600 rounded-full flex items-center justify-center text-slate-950 font-bold text-xl mb-4 shadow-lg">
+                            AM
+                        </div>
+                        <h4 class="font-bold text-lg text-white">Ana Alejandra Moreno López</h4>
+                        <span class="text-xs px-2.5 py-1 bg-purple-500/20 text-purple-300 rounded-full font-medium my-2">Estrategia Legal & Cumplimiento ESG</span>
+                        <p class="text-slate-400 text-xs leading-relaxed mt-1">
+                            Abogada y estudiante de IA/Ciencia de Datos. Líder en amparos colectivos, alineación con la NOM-127 y gobernanza.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 7: BUSINESS PLAN & FINANCIAL SIMULATOR -->
+        <section id="content-business" class="tab-content hidden space-y-6">
+            <div class="glass-panel p-6 sm:p-8 rounded-2xl">
+                <div class="mb-6">
+                    <h3 class="text-2xl font-bold text-cyan-400 flex items-center gap-3">
+                        <i class="fa-solid fa-chart-line"></i> Plan de Negocios, Modelo B2C/B2G & Simulador Financiero
+                    </h3>
+                    <p class="text-slate-300 text-sm mt-1">
+                        Sostenibilidad económica a través de la venta directa de filtros, repuestos periódicos, servicios de monitoreo de datos B2G y consultoría de cumplimiento ESG.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Controls Column -->
+                    <div class="bg-slate-900/90 p-5 rounded-xl border border-slate-800 space-y-5">
+                        <h4 class="font-bold text-white text-base border-b border-slate-800 pb-2">Variables de Proyección</h4>
+
+                        <div>
+                            <div class="flex justify-between text-xs text-slate-300 mb-1">
+                                <span>Filtros Hogar Vendidos / Mes</span>
+                                <span id="val-units" class="font-bold text-cyan-400">350</span>
+                            </div>
+                            <input type="range" id="input-units" min="50" max="2500" value="350" step="50"
+                                class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-cyan-500"
+                                oninput="updateFinancialSimulation()">
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between text-xs text-slate-300 mb-1">
+                                <span>Precio Unitario Filtro (MXN)</span>
+                                <span id="val-price-unit" class="font-bold text-emerald-400">$550</span>
+                            </div>
+                            <input type="range" id="input-price-unit" min="350" max="1200" value="550" step="50"
+                                class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                                oninput="updateFinancialSimulation()">
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between text-xs text-slate-300 mb-1">
+                                <span>Suscripciones Repuestos Anuales</span>
+                                <span id="val-sub" class="font-bold text-amber-400">1,200</span>
+                            </div>
+                            <input type="range" id="input-sub" min="100" max="10000" value="1200" step="100"
+                                class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-amber-500"
+                                oninput="updateFinancialSimulation()">
+                        </div>
+
+                        <div class="pt-2 border-t border-slate-800">
+                            <div class="text-xs text-slate-400 mb-2">Resumen Financiero Anual Estimado:</div>
+                            <div class="flex justify-between items-center py-1">
+                                <span class="text-xs text-slate-300">Ingresos Totales (MXN):</span>
+                                <span id="res-revenue" class="text-lg font-extrabold text-cyan-400">$2,730,000</span>
+                            </div>
+                            <div class="flex justify-between items-center py-1">
+                                <span class="text-xs text-slate-300">Margen Bruto Estimado:</span>
+                                <span id="res-margin" class="text-sm font-bold text-emerald-300">42% ($1,146,600)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Financial Growth Chart Column -->
+                    <div class="lg:col-span-2 bg-slate-900/60 p-4 rounded-xl border border-slate-800 flex flex-col justify-center">
+                        <div class="h-64 sm:h-80 w-full relative">
+                            <canvas id="financialGrowthChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="glass-panel mt-auto border-t border-slate-800 py-4 px-6 text-center text-xs text-slate-500">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
+            <div>
+                © 2026 Agua Segura en Casa - CUGDL / Laboratorio de Verificación Epistemológica y Litigio Climático.
+            </div>
+            <div class="flex space-x-4">
+                <span class="hover:text-slate-300 cursor-pointer">Aviso de Privacidad</span>
+                <span class="hover:text-slate-300 cursor-pointer">Alineación NOM-127</span>
+                <span class="hover:text-slate-300 cursor-pointer">Contacto Amparos</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript Interactions and Charts -->
+    <script>
+        // Tab Navigation Logic
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('active-tab');
+                el.classList.add('text-slate-400');
+            });
+
+            document.getElementById(`content-${tabId}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-${tabId}`);
+            activeBtn.classList.add('active-tab');
+            activeBtn.classList.remove('text-slate-400');
+
+            if (tabId === 'crisis' && window.waterChart) {
+                window.waterChart.resize();
+            }
+            if (tabId === 'business' && window.finChart) {
+                window.finChart.resize();
+            }
+        }
+
+        // Legal Document Generator Logic
+        function generateLegalDocument() {
+            const name = document.getElementById('legal-name').value || '[Nombre del Ciudadano]';
+            const colonia = document.getElementById('legal-colonia').value || '[Colonia / Municipio]';
+            const account = document.getElementById('legal-account').value || '[Número de Cuenta]';
+            const issue = document.getElementById('legal-issue').value;
+
+            const docText = `
+ASUNTO: ESCRITO DE QUEJA FORMAL Y SOLICITUD DE INSPECCIÓN SANITARIA
+ÓRGANO DESTINATARIO: COMISIÓN ESTATAL DE PROTECCIÓN CONTRA RIESGOS SANITARIOS DE JALISCO (COPRISJAL) Y SIAPA
+
+El que suscribe, ${name}, por mi propio derecho y en representación de mi núcleo familiar, señalando domicilio para oír y recibir notificaciones en la colonia ${colonia}, Jalisco (Cuenta SIAPA: ${account}), comparezco formalmente para exponer:
+
+1. HECHOS: Desde meses recientes, el suministro de agua potable recibido en mi domicilio presenta anomalías graves, manifestadas en: ${issue}.
+2. FUNDAMENTACIÓN: La NOM-127-SSA1-2021 establece un límite máximo permisible de turbidez de 4.0 UTN. El agua suministrada transgrede los artículos 4º Párrafo 6 de la Constitución Política de los Estados Unidos Mexicanos y la Ley del Agua para el Estado de Jalisco.
+3. PETICIÓN: Se ordene la verificación técnica en la red de distribución de la colonia ${colonia} y se suspenda el cobro de la tarifa completa hasta que el agua cumpla con los estándares microbiológicos y físicos de potabilidad.
+
+FIRMA: _____________________________
+PROTESTO LO NECESARIO
+FECHA: ${new Date().toLocaleDateString('es-MX')}
+            `;
+
+            const previewEl = document.getElementById('legal-preview');
+            previewEl.innerText = docText.trim();
+            previewEl.classList.remove('hidden');
+        }
+
+        // Sensor Simulator Logic
+        function updateSensorReadings() {
+            const turbidity = parseFloat(document.getElementById('input-turbidity').value);
+            const ph = parseFloat(document.getElementById('input-ph').value);
+            const tds = parseInt(document.getElementById('input-tds').value);
+
+            document.getElementById('val-turbidity').innerText = turbidity.toFixed(1) + ' UTN';
+            document.getElementById('val-ph').innerText = ph.toFixed(1);
+            document.getElementById('val-tds').innerText = tds + ' mg/L';
+
+            // Raw output label
+            document.getElementById('out-raw').innerText = `${turbidity.toFixed(1)} UTN / pH ${ph.toFixed(1)}`;
+
+            // Calculate post-filter turbidity (removes approx 92%)
+            const filteredTurb = (turbidity * 0.08).toFixed(1);
+            document.getElementById('out-filtered').innerText = `${filteredTurb} UTN / Apta`;
+
+            // Semáforo box rules
+            const semaforoBox = document.getElementById('semaforo-box');
+            const semaforoText = document.getElementById('semaforo-text');
+            const semaforoDesc = document.getElementById('semaforo-desc');
+
+            if (turbidity > 4.0 || ph < 6.5 || ph > 8.5 || tds > 1000) {
+                semaforoBox.className = "p-4 rounded-xl border transition-all duration-300 text-center bg-red-950/80 border-red-500 text-red-300";
+                semaforoText.innerText = "ALERTA: AGUA NO POTABLE";
+                semaforoDesc.innerText = "El agua sobrepasa los límites de la NOM-127-SSA1-2021. Se recomienda filtrado urgente y no consumir directamente.";
+            } else if (turbidity > 2.0) {
+                semaforoBox.className = "p-4 rounded-xl border transition-all duration-300 text-center bg-amber-950/80 border-amber-500 text-amber-300";
+                semaforoText.innerText = "PRECAUCIÓN: TURBIDEZ MODERADA";
+                semaforoDesc.innerText = "Calidad aceptable para uso doméstico. Usar filtro cerámico antes de ingerir.";
+            } else {
+                semaforoBox.className = "p-4 rounded-xl border transition-all duration-300 text-center bg-emerald-950/80 border-emerald-500 text-emerald-300";
+                semaforoText.innerText = "AGUA SEGURA / CUMPLE NORMA";
+                semaforoDesc.innerText = "Los parámetros están dentro de los rangos permisibles de la NOM-127.";
+            }
+        }
+
+        function submitCitizenReport() {
+            const alertEl = document.getElementById('report-alert');
+            alertEl.classList.remove('hidden');
+            setTimeout(() => {
+                alertEl.classList.add('hidden');
+            }, 4000);
+        }
+
+        // Financial Simulation Update
+        function updateFinancialSimulation() {
+            const units = parseInt(document.getElementById('input-units').value);
+            const priceUnit = parseInt(document.getElementById('input-price-unit').value);
+            const subs = parseInt(document.getElementById('input-sub').value);
+
+            document.getElementById('val-units').innerText = units;
+            document.getElementById('val-price-unit').innerText = '$' + priceUnit;
+            document.getElementById('val-sub').innerText = subs.toLocaleString();
+
+            const annualUnitRev = units * priceUnit * 12;
+            const annualSubRev = subs * 350; // $350 MXN per annual replacement cartridge
+            const totalRev = annualUnitRev + annualSubRev;
+            const margin = Math.round(totalRev * 0.42);
+
+            document.getElementById('res-revenue').innerText = '$' + Math.round(totalRev).toLocaleString() + ' MXN';
+            document.getElementById('res-margin').innerText = '42% ($' + margin.toLocaleString() + ' MXN)';
+
+            if (window.finChart) {
+                window.finChart.data.datasets[0].data = [
+                    totalRev * 0.4,
+                    totalRev,
+                    totalRev * 2.1,
+                    totalRev * 3.8,
+                    totalRev * 6.0
+                ];
+                window.finChart.update();
+            }
+        }
+
+        // Initialize Charts
+        let waterChart = null;
+        let finChart = null;
+
+        function initWaterQualityChart() {
+            const ctx = document.getElementById('waterQualityChart').getContext('2d');
+            waterChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Turbidez (UTN)', 'Cloro Libre (mg/L x10)', 'TDS (mg/L /100)', 'Coliformes (UFC/100ml)'],
+                    datasets: [
+                        {
+                            label: 'Límite NOM-127-SSA1-2021',
+                            data: [4.0, 2.0, 10.0, 0],
+                            backgroundColor: '#10b981',
+                            borderRadius: 6
+                        },
+                        {
+                            label: 'Promedio Muestreado ZMG',
+                            data: [14.2, 0.1, 7.8, 12.0],
+                            backgroundColor: '#ef4444',
+                            borderRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: '#94a3b8', font: { family: 'Inter' } } }
+                    },
+                    scales: {
+                        x: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } },
+                        y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
+                    }
+                }
+            });
+            window.waterChart = waterChart;
+        }
+
+        function initFinancialGrowthChart() {
+            const ctx = document.getElementById('financialGrowthChart').getContext('2d');
+            finChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Año 1', 'Año 2', 'Año 3', 'Año 4', 'Año 5'],
+                    datasets: [
+                        {
+                            label: 'Proyección de Ingresos Acumulados (MXN)',
+                            data: [1000000, 2730000, 5700000, 10300000, 16300000],
+                            borderColor: '#06b6d4',
+                            backgroundColor: 'rgba(6, 182, 212, 0.15)',
+                            fill: true,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: '#94a3b8', font: { family: 'Inter' } } }
+                    },
+                    scales: {
+                        x: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } },
+                        y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
+                    }
+                }
+            });
+            window.finChart = finChart;
+        }
+
+        window.onload = function() {
+            initWaterQualityChart();
+            initFinancialGrowthChart();
+            updateSensorReadings();
+            updateFinancialSimulation();
+        };
+    </script>
+</body>
+</html>
